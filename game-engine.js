@@ -74,7 +74,7 @@ function stateNow(s) {
 function addDecision(s, round, type, title, detail, riskLevel, riskReason, judgment, impact) {
   if (!Array.isArray(s.decisions)) s.decisions = [];
   s.decisions.push({ round, type, title, detail, riskLevel, riskReason, judgment, impact: impact || "", state: stateNow(s), time: Date.now() });
-  logEvent(s.i, title, detail, "风险：" + riskLevel);
+  logEvent(state, s.i, title, detail, "风险：" + riskLevel);
 }
 function addScarcity(s, act, kind, what, gaveUp) {
   if (!Array.isArray(s.scarcity)) s.scarcity = [];
