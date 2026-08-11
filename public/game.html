@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>潮镇：消失的未来｜多人在线版</title>
+<link rel="stylesheet" href="/game.css">
+</head>
+<body>
+
+<div id="connecting" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--paper);z-index:999">
+ <div style="text-align:center">
+  <div style="font-size:48px;margin-bottom:16px">🌴</div>
+  <h2>正在连接服务器…</h2>
+  <p style="color:var(--muted)" id="connStatus">等待 WebSocket 连接</p>
+ </div>
+</div>
+
+<div id="app" class="hidden">
+ <div class="topbar">
+  <div class="brand">🌴 潮镇 · 消失的未来 · 多人版</div>
+  <div class="tabs">
+   <button class="tab active" data-v="player" onclick="view('player')">玩家端</button>
+   <button class="tab" data-v="host" onclick="view('host')">讲师看板</button>
+   <button class="tab" data-v="ending" onclick="view('ending')">终局复盘</button>
+  </div>
+ </div>
+ <main class="wrap">
+
+  <section class="card macro">
+   <div class="copy">
+    <span class="badge warn">真实宏观背景 → 剧情化风险</span>
+    <h2>同一个年份，对不同家庭不是同一个故事</h2>
+    <ul id="macroList"></ul>
+    <div class="source" id="macroSource"></div>
+   </div>
+   <div class="visual">
+    <div class="tile"><small>初始资产</small><b>500 万</b><small>现金 / 储备 / 股票 / 债券 / 大宗商品</small></div>
+    <div class="tile"><small>刚性支出</small><b>逐幕上升</b><small>教育、照护、通胀不会等你准备好</small></div>
+    <div class="tile"><small>命运袋</small><b>第三、四幕</b><small>危机与债务最紧的两幕，才是运气真正咬人的时候</small></div>
+    <div class="tile"><small>结局</small><b>家族画像</b><small>看净资产和选择权两条线怎么分开</small></div>
+   </div>
+  </section>
+
+  <section id="playerView">
+   <div class="section-title">
+    <div><span class="badge">STEP 1</span><h2>选择家族</h2></div>
+    <p>每个家族有完整档案：收入结构、成员、企业、住房、教育目标和一条只有自己知道的隐藏压力。选定后先读档案，再进第一幕。</p>
+   </div>
+   <div id="families" class="family-grid"></div>
+
+   <div id="playerGame" class="hidden">
+    <div id="dossier"></div>
+    <div id="custodyBanner"></div>
+    <div id="runway"></div>
+    <div id="gauges" class="gauges"></div>
+    <div id="resources" class="resources"></div>
+    <div class="prereq" style="margin-bottom:12px">
+     <b>跨幕规则：</b>上一幕的所有状态原样进入下一幕，永不清零。每一幕只在上面继续加减：固定收入、刚性支出、消费、危机、命运袋、借贷、偿债、合作。
+     <br><b>延后结算：</b>股票、债券、大宗商品的收益只在第六幕结束后结算，中途不计入现金。
+     <br><b>储备的特殊性：</b>储备是被保护的钱——系统的自动扣款不会碰它，只有你自己主动提取才会动用。这也意味着，它救不了你，除非你决定用它。
+    </div>
+    <div class="game-grid">
+     <section class="card">
+      <div class="round-nav">
+       <span class="live"><span class="dot"></span> 实时同步中 · 操作即提交</span>
+       <span id="roundNavInfo" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div id="syncBar" class="sync-bar off"></div>
+      <div id="roundPanel"></div>
+     </section>
+     <aside class="card">
+      <div id="fateBox"></div>
+      <div id="triggerBox"></div>
+      <div id="debtBox"></div>
+      <h4>家庭记录</h4>
+      <div id="history" class="log"></div>
+     </aside>
+    </div>
+   </div>
+  </section>
+
+  <section id="hostView" class="hidden">
+   <div class="section-title">
+    <div><span class="badge warn">讲师模式</span><h2>实时看板</h2></div>
+    <p>红底＝流动性告警，深红＝已进入托管。这两列比净资产更值得你在课堂上停下来问一句。</p>
+   </div>
+   <div class="card">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+     <button class="btn small" onclick="sendNextRound()">下一幕</button>
+     <button class="btn small alt" onclick="sendPrevRound()">上一幕</button>
+     <button class="btn small alt" onclick="renderHost()">刷新显示</button>
+     <button class="btn small red" onclick="sendReset()">重置游戏</button>
+    </div>
+    <div id="hostRound" class="news"></div>
+    <div id="hostPrompt" class="prereq" style="margin-bottom:12px"></div>
+    <div id="linkBox" style="margin-bottom:14px"></div>
+    <h3 style="margin:18px 0 8px">📡 全场进度</h3>
+    <div id="hostProgress"></div>
+    <h3 style="margin:18px 0 8px">🧾 每一步选择的实时记录</h3>
+    <div id="hostFeed"></div>
+    <div class="table-wrap"><table class="dash" id="dash"></table></div>
+   </div>
+  </section>
+
+  <section id="endingView" class="hidden">
+   <div class="section-title">
+    <div><span class="badge gold">终局</span><h2>结算 + 家族画像</h2></div>
+    <p>第六幕提交后，投资收益才结算，同时生成这一局的家族画像。</p>
+   </div>
+   <div class="ending-grid">
+    <div class="card">
+     <select id="endingFamily" onchange="renderEnding()"></select>
+     <div id="endingContent" style="margin-top:14px"></div>
+    </div>
+    <div class="ending">
+     <div class="quote">六幕里你做的每一个决定，都在回答同一个问题：这一次，我愿意用未来的哪一部分，去换今天的安稳？</div>
+     <h3>终局共答</h3>
+     <p style="font-size:14px;line-height:1.7"><b>如果未来仍然充满无法预测的冲击，家庭真正需要提前积累的"资本"有哪些？</b></p>
+     <textarea id="finalReflection"></textarea>
+     <button class="btn gold" style="margin-top:8px" onclick="saveFinal()">保存</button>
+    </div>
+   </div>
+   <div class="card" style="margin-top:16px"><h3>7 个家族总结</h3><div id="allSummaries"></div></div>
+  </section>
+ </main>
+
+ <div id="portraitModal" class="portrait-modal hidden"><div class="portrait-shell" id="portraitBody"></div></div>
+ <div id="noticeModal" class="portrait-modal hidden"><div class="portrait-shell" style="max-width:720px" id="noticeBody"></div></div>
+ <div id="coopModal" class="portrait-modal hidden"><div class="portrait-shell" style="max-width:760px" id="coopBody"></div></div>
+
+ <div class="footer">
+  多人在线版 · 金额单位：万元 · WebSocket 实时同步<br>
+  游戏中的收入、生活成本、危机金额、资产收益率均为<b>教学示例数字</b>，用于课堂演算，不是对任何真实市场的预测或建议。
+ </div>
+</div>
+
+<script src="/game-client.js"></script>
+</body>
+</html>

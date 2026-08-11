@@ -1,0 +1,16 @@
+{
+  "name": "chaozhen-multiplayer",
+  "version": "1.0.0",
+  "description": "潮镇：消失的未来 - 多人在线互动版",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "ws": "^8.21.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
