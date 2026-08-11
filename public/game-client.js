@@ -816,8 +816,106 @@ function sendReset() {
   if (confirm("确认重置游戏？所有数据将清空。")) send('RESET_GAME', {});
 }
 
+function renderHostSummary() {
+  const box = document.querySelector('#hostSummary');
+  if (!box) return;
+
+  const started = g.families.filter(s => s.allocated);
+  const n = started.length;
+  const acts = R_DATA.map(r => r[0].split("｜")[0]);
+
+  // 完成本幕人数
+  const done = (s, a) => {
+    if (a === 0) return !!s.allocated;
+    if (a === 1) return !!s.consumeDone;
+    if (a === 2) return !!s.painDone;
+    if (a === 3) return !!s.crisisDone;
+    if (a === 4) return (s.trail || []).some(t => t.act === 4);
+    if (a === 5) return !!(s.coopPick || s.coopOptOut);
+    if (a === 6) return !!s.gameEnded;
+    return false;
+  };
+
+  const roundDoneCount = started.filter(s => done(s, g.round)).length;
+  const waitingCount = n - roundDoneCount;
+
+  // 统计指标（只在已开始的家族上统计）
+  let avgNet = 0, avgDebtRate = 0, avgCov = 0, avgOpt = 0;
+  let riskCount = 0, custodyCount = 0, endedCount = 0;
+  let maxNet = -Infinity, minNet = Infinity, maxNetName = '', minNetName = '';
+  let totalCash = 0, totalStock = 0, totalBond = 0, totalCommodity = 0, totalDebtAll = 0;
+
+  started.forEach((s, i) => {
+    const nw = netWorth(s);
+    const dr = debtRatio(s);
+    const cov = coverage(s, g.round);
+    const oi = optionIndex(s, g.round);
+    avgNet += nw; avgDebtRate += dr; avgCov += cov; avgOpt += oi;
+    totalCash += s.cash; totalStock += s.stock; totalBond += s.bond; totalCommodity += s.commodity;
+    totalDebtAll += totalDebt(s);
+    if (cov < MARGIN_TRIGGER && !s.custody) riskCount++;
+    if (s.custody) custodyCount++;
+    if (s.gameEnded) endedCount++;
+    if (nw > maxNet) { maxNet = nw; maxNetName = s.name; }
+    if (nw < minNet) { minNet = nw; minNetName = s.name; }
+  });
+  if (n > 0) { avgNet /= n; avgDebtRate /= n; avgCov /= n; avgOpt /= n; }
+  if (!isFinite(maxNet)) { maxNet = 0; maxNetName = '—'; }
+  if (!isFinite(minNet)) { minNet = 0; minNetName = '—'; }
+
+  // KPI 卡片
+  const kpi = (label, val, sub, cls) =>
+    `<div class="summary-kpi ${cls || ''}"><span class="kpi-label">${label}</span><b class="kpi-val ${cls || ''}">${val}</b><small class="kpi-sub">${sub || ''}</small></div>`;
+
+  let html = '<h3 style="margin:18px 0 8px">📊 全班实时汇总</h3>';
+  html += '<div class="summary-kpi-row">';
+  html += kpi('在线/总数', n + '/7', started.filter(s => !s.gameEnded).length + ' 人进行中');
+  html += kpi('当前幕完成', roundDoneCount + '/' + n, waitingCount > 0 ? '⏳ ' + waitingCount + ' 人待提交' : '✅ 全部完成', waitingCount > 0 ? '' : 'ok');
+  html += kpi('平均净资产', fm(avgNet) + '万', '最高 ' + maxNetName + ' ' + fm(maxNet) + '万');
+  html += kpi('平均负债率', Math.round(avgDebtRate * 100) + '%', '最低 ' + minNetName + ' ' + fm(minNet) + '万');
+  html += kpi('平均覆盖率', n ? fm(avgCov) + '×' : '—', n ? (avgCov < MARGIN_TRIGGER ? '⚠️ 低于安全线' : '安全线 ' + MARGIN_TRIGGER + '×') : '等待开始', n && avgCov < MARGIN_TRIGGER ? 'warn' : 'ok');
+  html += kpi('平均选择权', avgOpt.toFixed(1), '开局 4.0');
+  html += kpi('风险预警', riskCount + ' 人', '覆盖率 < ' + MARGIN_TRIGGER + '×', riskCount > 0 ? 'warn' : 'ok');
+  html += kpi('已托管', custodyCount + ' 人', custodyCount > 0 ? '🚨 需关注' : '无', custodyCount > 0 ? 'danger' : 'ok');
+  html += kpi('已结束', endedCount + '/7', endedCount === 7 ? '全部完成' : '游戏进行中');
+  html += '</div>';
+
+  // 全班资产分布
+  html += '<div class="summary-assets" style="margin-top:14px">';
+  html += '<div class="summary-asset-item"><span>💵 全班现金</span><b>' + fm(totalCash) + '万</b></div>';
+  html += '<div class="summary-asset-item"><span>📈 全班股票</span><b>' + fm(totalStock) + '万</b></div>';
+  html += '<div class="summary-asset-item"><span>🏛️ 全班债券</span><b>' + fm(totalBond) + '万</b></div>';
+  html += '<div class="summary-asset-item"><span>🛢️ 全班商品</span><b>' + fm(totalCommodity) + '万</b></div>';
+  html += '<div class="summary-asset-item"><span>💳 全班总负债</span><b>' + fm(totalDebtAll) + '万</b></div>';
+  html += '</div>';
+
+  // 各家族净资产排名条形图
+  if (n > 0) {
+    const sorted = started.map((s, i) => ({ name: s.name, icon: T_ICONS[g.families.indexOf(s)], nw: netWorth(s), custody: s.custody, ended: s.gameEnded }))
+      .sort((a, b) => b.nw - a.nw);
+    const maxBar = Math.max(...sorted.map(s => Math.abs(s.nw)), 1);
+    html += '<h4 style="margin:16px 0 6px">🏆 净资产排名</h4>';
+    html += '<div class="summary-rank">';
+    sorted.forEach((s, i) => {
+      const pct = Math.abs(s.nw) / maxBar * 100;
+      const neg = s.nw < 0;
+      const badge = s.custody ? ' 🚨' : (s.ended ? ' ✅' : '');
+      html += '<div class="rank-row">'
+        + '<span class="rank-num">' + (i + 1) + '</span>'
+        + '<span class="rank-name">' + s.icon + ' ' + s.name + badge + '</span>'
+        + '<div class="rank-bar-wrap"><div class="rank-bar ' + (neg ? 'neg' : '') + '" style="width:' + pct + '%"></div></div>'
+        + '<span class="rank-val ' + (neg ? 'neg' : '') + '">' + fm(s.nw) + '万</span>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  box.innerHTML = html;
+}
+
 function renderHost() {
   if (!g) return;
+  renderHostSummary();
   const fb = document.querySelector('#hostFeed');
   const ev = (g.events || []).slice().sort((a, b) => b.ts - a.ts);
   const feedHtml = ev.length ? '<div class="table-wrap"><table><tr><th>时间</th><th>家庭</th><th>幕</th><th>动作</th><th>内容</th></tr>'
@@ -945,7 +1043,21 @@ function renderAll() {
   renderMacro();
   renderSync();
   renderFamilies();
-  if (g.families[sel] && g.families[sel].allocated) {
+  const myFam = g.families[sel];
+  if (myFam && (myFam.allocated || (!isHost && sel === myFamilyIdx))) {
+    // 学员始终显示自己的游戏面板（无论是否已配置资产）
+    document.querySelector('#playerGame').classList.remove('hidden');
+    renderDossier();
+    renderCustody();
+    renderGauges();
+    renderResources();
+    roundHTML();
+    renderFate();
+    renderTriggers();
+    renderDebt();
+    renderHistory();
+  } else if (myFam && isHost && myFam.allocated) {
+    // 讲师只看已开始游戏的家族面板
     document.querySelector('#playerGame').classList.remove('hidden');
     renderDossier();
     renderCustody();
