@@ -244,3 +244,85 @@ table.dash tr.custody td{background:#f7dcd6;font-weight:700}
  .gauges{grid-template-columns:1fr}
  .portrait-shell{padding:18px;border-radius:18px}
 }
+
+/* ===================== 讲师实时汇总 ===================== */
+.host-summary{display:flex;flex-direction:column;gap:14px}
+.summary-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.summary-kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.summary-kpi .kpi-label{font-size:12px;color:var(--muted);font-weight:700}
+.summary-kpi .kpi-val{font-size:26px;letter-spacing:-.03em;line-height:1.1}
+.summary-kpi .kpi-val.warn{color:var(--gold)}
+.summary-kpi .kpi-val.danger{color:var(--red)}
+.summary-kpi .kpi-val.ok{color:var(--green)}
+.summary-kpi .kpi-sub{font-size:11px;color:var(--muted)}
+.summary-detail-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.summary-detail-row{grid-template-columns:1fr}}
+.summary-detail{background:rgba(255,253,248,.6);border:1px solid var(--line);border-radius:16px;padding:16px}
+.summary-detail h4{margin:0 0 10px;font-size:14px;color:var(--ink)}
+.asset-bars{display:flex;flex-direction:column;gap:7px}
+.asset-bar{display:flex;align-items:center;gap:8px}
+.asset-bar .ab-label{width:64px;font-size:12px;color:var(--muted);text-align:right}
+.asset-bar .ab-track{flex:1;height:18px;background:#eee;border-radius:9px;overflow:hidden}
+.asset-bar .ab-fill{height:100%;border-radius:9px;transition:width .4s}
+.asset-bar .ab-val{width:60px;font-size:12px;font-weight:800;text-align:right}
+.cap-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cap-item{background:#f7f2e4;border-radius:10px;padding:10px;text-align:center}
+.cap-item span{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.cap-item b{font-size:20px}
+.rank-list{display:flex;flex-direction:column;gap:5px}
+.rank-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:#f7f2e4;border-radius:9px}
+.rank-num{width:24px;text-align:center;font-size:14px}
+.rank-name{flex:1;font-size:13px;font-weight:600}
+.rank-val{font-size:14px;font-weight:800}
+.rank-opt{font-size:11px;color:var(--muted)}
+.summary-rank{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;align-items:center;gap:8px;padding:5px 0}
+.rank-row .rank-num{width:22px;text-align:center;font-size:13px;font-weight:800;color:var(--muted)}
+.rank-row .rank-name{flex:0 0 auto;font-size:13px;font-weight:600;min-width:100px}
+.rank-bar-wrap{flex:1;height:16px;background:#eee5d0;border-radius:8px;overflow:hidden}
+.rank-bar{height:100%;background:var(--teal);border-radius:8px;transition:width .4s}
+.rank-bar.neg{background:var(--red)}
+.rank-val{width:70px;text-align:right;font-size:13px;font-weight:800}
+.rank-val.neg{color:var(--red)}
+.summary-assets{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.summary-asset-item{background:#f7f2e4;border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:center}
+.summary-asset-item span{display:block;font-size:11px;color:var(--muted);margin-bottom:3px}
+.summary-asset-item b{font-size:18px}
+
+/* ===================== 讲师实时汇总 ===================== */
+.host-summary{margin:0 0 16px}
+.summary-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.summary-kpi{background:#f7f2e4;border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.summary-kpi .kpi-label{font-size:11px;color:var(--muted);font-weight:700}
+.summary-kpi .kpi-val{font-size:24px;letter-spacing:-.03em}
+.summary-kpi .kpi-val.warn{color:#c7963e}
+.summary-kpi .kpi-val.danger{color:var(--red)}
+.summary-kpi .kpi-sub{font-size:11px;color:var(--muted)}
+
+.summary-detail-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px}
+.summary-detail{background:#f7f2e4;border:1px solid var(--line);border-radius:14px;padding:14px}
+.summary-detail h4{margin:0 0 10px;font-size:14px}
+
+.asset-bars{display:flex;flex-direction:column;gap:7px}
+.asset-bar{display:grid;grid-template-columns:64px 1fr 52px;align-items:center;gap:8px;font-size:12px}
+.ab-label{color:var(--muted)}
+.ab-track{height:14px;background:#e8e0cc;border-radius:7px;overflow:hidden}
+.ab-fill{height:100%;border-radius:7px;transition:width .4s}
+.ab-val{text-align:right;font-weight:800}
+
+.cap-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cap-item{background:#fffdf8;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.cap-item span{display:block;font-size:10px;color:var(--muted);margin-bottom:3px}
+.cap-item b{font-size:18px}
+
+.rank-list{display:flex;flex-direction:column;gap:5px}
+.rank-item{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:8px;padding:6px 8px;background:#fffdf8;border:1px solid var(--line);border-radius:10px;font-size:12px}
+.rank-num{font-weight:800;text-align:center}
+.rank-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-val{font-weight:800}
+.rank-opt{color:var(--muted);font-size:10px}
+
+@media(max-width:1000px){
+ .summary-detail-row{grid-template-columns:1fr}
+ .summary-kpi-row{grid-template-columns:repeat(2,1fr)}
+}

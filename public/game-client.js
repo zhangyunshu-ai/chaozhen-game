@@ -92,7 +92,18 @@ function send(type, payload = {}) {
 }
 
 /* ===================== 视图切换 ===================== */
+const HOST_PASSWORD = "556765";
+let hostUnlocked = false;
+
 function view(v) {
+  if (v === 'host' && !hostUnlocked) {
+    const input = prompt('请输入讲师密码：');
+    if (input !== HOST_PASSWORD) {
+      alert('密码错误');
+      return;
+    }
+    hostUnlocked = true;
+  }
   ['player', 'host', 'ending'].forEach(x => {
     const el = document.querySelector('#' + x + 'View');
     if (el) el.classList.toggle('hidden', x !== v);
